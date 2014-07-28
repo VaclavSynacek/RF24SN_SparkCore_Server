@@ -24,3 +24,20 @@ Usage:
 just power up the Spark Core
 
 
+## Wiring
+
+![Wiring](https://raw.githubusercontent.com/VaclavSynacek/RF24SN_SparkCore_Server/master/RF24SN-SparkCore_bb.png "Wiring")
+
+The SPI wires (yellow) have to go exactly to their counterparts:
+* MOSI to MOSI
+* MISO to MISO
+* SCK to SC(L)K
+
+The VCC (red) has to go to any 3.3V pin.
+
+GRN (black) can go to any ground.
+
+The CE and CSN (cyan) go to A2 and D6 respectively. Different pins may be used, but the code above assumes this wiring.
+
+IRQ is not used in this implementation
+
