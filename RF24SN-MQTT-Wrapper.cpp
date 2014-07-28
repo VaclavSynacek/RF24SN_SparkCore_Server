@@ -4,29 +4,40 @@
 
 #include <application.h>
 
+#include <map>
 
 TCPClient tcpClient;
 byte ip[] = { 192, 168, 69, 100 };
 PubSubClient client(ip, 1883, onMessage, tcpClient);
 
+std::map<uint16_t, float> messageStore; 
 
 void onMessage(char* topic, byte* payload, unsigned int length) 
 {
-    //if (msg == NULL) { return; }
 
-    float value = 3;
-    //const char* pch = ((char *)msg->payload);
-    //stringstream(pch) >> value;
+	char payloadBuffer [length + 1];
+	memcpy ( payloadBuffer, payload, length );
+	payloadBuffer[length] = '\0'; 
+    	float value = atof( ((char*)(payloadBuffer)) );
 
-    //string topic = "test";msg->topic;
+	String topicParse = String(topic);
+	int lastSlash = topicParse.lastIndexOf("/");
+	int lastButOneSlash = topicParse.substring(0, lastSlash -1).lastIndexOf("/"); 
+	String sensorIdString = topicParse.substring( lastSlash + 1, topicParse.length() );
+	String nodeIdString = topicParse.substring( lastButOneSlash + 1, lastSlash);
 
-    //messageStore[topic] = value;
-	Serial.println("received MQTT");
+	uint8_t sensorId = sensorIdString.toInt();
+	uint8_t nodeId = nodeIdString.toInt();
+
+	uint16_t key = (nodeId * 256) + sensorId;
+
+	messageStore[key] = value;
 }
 
 void mqttSetup(void)
 {
-	if (client.connect("Spark")) {
+
+	if (client.connect("RF24SN on SparkCore")) {
     		client.publish("RF24SN/status","I'm Alive...");
     		client.subscribe("RF24SN/out/+/+");
 	}
@@ -56,9 +67,8 @@ void mqttPublish(int nodeId, int sensorId, float value)
 
 float mqttRequest(int nodeId, int sensorId)
 {
-    //string topic = mqttTopic(nodeId, sensorId, true);
- ///	return messageStore[topic];
-	return -1;
+     uint16_t key = (nodeId * 256) + sensorId;
+	return messageStore[key];
 }
 
 
